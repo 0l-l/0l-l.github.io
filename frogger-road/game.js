@@ -472,6 +472,10 @@
   // ── Input ─────────────────────────────────────────────────────────────────
   let tx0=0, ty0=0;
   document.addEventListener('keydown', e=>{
+    // Restart on Enter or Space when dead or on start screen
+    if (e.key==='Enter' || e.key===' ') {
+      if (state==='dead' || state==='start') { e.preventDefault(); startGame(); return; }
+    }
     const M={'ArrowUp':'f','ArrowDown':'b','ArrowLeft':'l','ArrowRight':'r','w':'f','s':'b','a':'l','d':'r'};
     if (!M[e.key]) return; e.preventDefault();
     if (state==='playing') _jump(M[e.key]);
