@@ -31,41 +31,47 @@
 
   // ── Alien Palette ─────────────────────────────────────────────────────────
   const C = {
-    // Safe / rock fields — dusty purple alien terrain
-    rockA:    '#7a5c9e', rockB:    '#6a4c8e', rockC:    '#8a6cb0',
-    rockSide: '#4a3468',
-    // Crystal spires (replace trees)
-    xtalBase: '#9860c8', xtalSide: '#6a3898', xtalDark: '#4a2878',
-    xtalTipA: '#e0b0ff', xtalTipB: '#c890ff', xtalGlow: '#f0d8ff',
-    // Hover lane — dark teal energy road
-    hoverA:   '#1a3a4a', hoverB:   '#142e3c',
-    hoverSide:'#0c1e28',
-    hoverLine:'#00e8c8', // teal energy stripe
-    // Hovercraft colors
-    hcNeon:   '#00ffcc', hcNeonS:  '#009988',
+    // Safe / rock fields — clearly alien: sandy purple-grey surface with subtle texture
+    rockA:    '#8c7aaa', rockB:    '#7a688e', rockC:    '#9e8abf',
+    rockSide: '#4e3e6a',
+    // Crystal spires — bright teal/cyan so they read as "interesting obstacle" not ground
+    xtalBase: '#20d8d0', xtalSide: '#0ea8a0', xtalDark: '#087870',
+    xtalTipA: '#aafffc', xtalTipB: '#60f0ea', xtalGlow: '#dfffff',
+    // Hover lane — clearly a ROAD: dark charcoal with bright neon grid lines
+    hoverA:   '#1c1c2e', hoverB:   '#151520',
+    hoverSide:'#0a0a14',
+    hoverLine:'#00ffcc', // bright teal grid
+    hoverEdge:'#00c8a0',
+    // Hovercraft colors — saturated, distinct
+    hcNeon:   '#00ffcc', hcNeonS:  '#009977',
     hcPurple: '#cc44ff', hcPurpleS:'#882abb',
-    hcYellow: '#ffe030', hcYellowS:'#b8a010',
-    hcPink:   '#ff4499', hcPinkS:  '#cc1166',
-    hcOrange: '#ff6600', hcOrangeS:'#cc4400',
-    hcBlue:   '#3388ff', hcBlueS:  '#1155cc',
-    hcGlass:  '#88eeff',
-    hcThrust: '#ff9900',
-    // Lava flow — deep orange/red hazard
-    lavaA:    '#c84800', lavaB:    '#b03800', lavaC:    '#e05800',
-    lavaSide: '#882800',
-    lavaGlow: '#ff9940',
-    // Rock platform (rides over lava)
-    platTop:  '#706070', platSide: '#504050', platDark: '#303030',
-    platCrack:'#403040',
-    // Astronaut
-    suitW:    '#e8e4dc', suitS:    '#b8b4ac', suitD:    '#888480',
+    hcYellow: '#ffe030', hcYellowS:'#b89000',
+    hcPink:   '#ff2288', hcPinkS:  '#bb0055',
+    hcOrange: '#ff5500', hcOrangeS:'#cc2200',
+    hcBlue:   '#2288ff', hcBlueS:  '#0055cc',
+    hcGlass:  '#aaeeff',
+    hcThrust: '#ff8800',
+    hcTrail:  '#ffcc44',
+    // Lava flow — unmistakably LAVA: vivid red-orange base, bright crack lines
+    lavaA:    '#d04000', lavaB:    '#b83200', lavaC:    '#e85000',
+    lavaSide: '#8c2400',
+    lavaCrack:'#ff9900', // bright orange crack glow between tiles
+    lavaHot:  '#ffdd00', // hottest crack center
+    lavaCool: '#cc3300',
+    // Rock platform (floats over lava) — clearly elevated: bright edge, dark shadow
+    platTop:  '#8a7a8a', platSide: '#5a4a5a', platDark: '#2e202e',
+    platEdge: '#ffaa44', // hot lava-lit bottom edge
+    platCrack:'#4a3048',
+    // Astronaut — orange suit stripe makes them instantly readable
+    suitW:    '#dde0e8', suitS:    '#adb0b8', suitD:    '#7d8088',
+    suitStripe:'#ff7700', suitStripeS:'#cc4400',
     visor:    '#ff9020', visorDark:'#cc6000', visorGlow:'#ffcc70',
-    helmetR:  '#f0ece4', helmetS:  '#c0bcb4',
-    packTop:  '#c8b870', packSide: '#a89850',
-    bootTop:  '#888090', bootSide: '#585060',
-    hitFlash: '#ff2020',
-    outline:  'rgba(0,0,0,0.35)',
-    shadow:   'rgba(0,0,0,0.30)',
+    helmetR:  '#f0f0f8', helmetS:  '#c0c0c8',
+    packTop:  '#e8c840', packSide: '#b89820',
+    bootTop:  '#444860', bootSide: '#2a2c40',
+    hitFlash: '#ff1010',
+    outline:  'rgba(0,0,0,0.40)',
+    shadow:   'rgba(0,0,0,0.35)',
     // Star field
     starA:    '#ffffff', starB:    '#e8d8ff', starC:    '#d8f0ff',
   };
@@ -209,42 +215,66 @@
     }
   }
 
-  // Teal energy dashes on hover lanes
+  // Bright neon grid on hover lanes — unmistakably a high-tech road
   function _renderHoverMarkings (r, lane) {
+    // Full-width bright edge stripe at the near edge of the lane
+    const edgeA = proj(0,    r, SH/BH+0.02);
+    const edgeB = proj(COLS, r, SH/BH+0.02);
+    ctx.save();
+    ctx.strokeStyle = C.hoverEdge;
+    ctx.lineWidth   = 2.5;
+    ctx.globalAlpha = 0.9;
+    ctx.beginPath(); ctx.moveTo(edgeA.x, edgeA.y); ctx.lineTo(edgeB.x, edgeB.y); ctx.stroke();
+    ctx.restore();
+
+    // Animated neon dash lines running along the lane
+    const t = performance.now() * 0.0008 * lane.dir;
     for (let c=0; c<COLS; c++) {
-      if ((c+r) % 2 === 0) continue;
-      const pa = proj(c+0.2, r,   SH/BH+0.01);
-      const pb = proj(c+0.8, r,   SH/BH+0.01);
-      const pc2= proj(c+0.8, r+1, SH/BH+0.01);
-      const pd = proj(c+0.2, r+1, SH/BH+0.01);
+      const phase = ((c + t) % 2);
+      if (phase > 1) continue;
+      const mid  = proj(c + 0.5, r + 0.5, SH/BH + 0.02);
+      const midf = proj(c + 0.5, r + 0.5 + 0.35, SH/BH + 0.02);
       ctx.save();
-      ctx.globalAlpha = 0.55;
-      ctx.fillStyle = C.hoverLine;
-      ctx.beginPath();
-      ctx.moveTo((pa.x+pd.x)*0.5,(pa.y+pd.y)*0.5);
-      ctx.lineTo((pb.x+pc2.x)*0.5,(pb.y+pc2.y)*0.5);
-      ctx.lineTo((pb.x+pc2.x)*0.5,(pb.y+pc2.y)*0.5+3);
-      ctx.lineTo((pa.x+pd.x)*0.5,(pa.y+pd.y)*0.5+3);
-      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = C.hoverLine;
+      ctx.lineWidth   = 2;
+      ctx.globalAlpha = 0.7 * (1 - phase);
+      ctx.beginPath(); ctx.moveTo(mid.x, mid.y); ctx.lineTo(midf.x, midf.y); ctx.stroke();
       ctx.restore();
     }
   }
 
-  // Lava glow shimmer
+  // Lava: bright glowing cracks between tiles — reads as molten rock immediately
   function _renderLavaGlow (r) {
-    const t = performance.now()*0.0012;
-    for (let c=0; c<COLS; c++) {
-      const a = 0.08+0.10*Math.abs(Math.sin(c*2.1+r*0.6+t));
-      const pa = proj(c+0.05, r+0.1,  SH/BH+0.01);
-      const pb = proj(c+0.95, r+0.1,  SH/BH+0.01);
-      const pc2= proj(c+0.95, r+0.9,  SH/BH+0.01);
-      const pd = proj(c+0.05, r+0.9,  SH/BH+0.01);
+    const t = performance.now() * 0.0018;
+
+    // Crack lines between every tile column — bright orange veins
+    for (let c=0; c<=COLS; c++) {
+      const pulse = 0.55 + 0.45 * Math.abs(Math.sin(c * 1.7 + r * 0.9 + t));
+      const pa = proj(c, r,   SH/BH + 0.005);
+      const pb = proj(c, r+1, SH/BH + 0.005);
       ctx.save();
-      ctx.globalAlpha = a;
-      ctx.fillStyle = C.lavaGlow;
-      ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.lineTo(pc2.x,pc2.y); ctx.lineTo(pd.x,pd.y); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = C.lavaCrack;
+      ctx.lineWidth   = 2.5;
+      ctx.globalAlpha = pulse * 0.75;
+      ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+      // Bright hot center
+      ctx.strokeStyle = C.lavaHot;
+      ctx.lineWidth   = 0.8;
+      ctx.globalAlpha = pulse * 0.50;
+      ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
       ctx.restore();
     }
+
+    // Near-edge row crack — horizontal bright seam
+    const ha = proj(0,    r, SH/BH + 0.005);
+    const hb = proj(COLS, r, SH/BH + 0.005);
+    const pulse2 = 0.6 + 0.4 * Math.abs(Math.sin(r * 2.1 + t * 1.3));
+    ctx.save();
+    ctx.strokeStyle = C.lavaCrack;
+    ctx.lineWidth   = 2.5;
+    ctx.globalAlpha = pulse2 * 0.85;
+    ctx.beginPath(); ctx.moveTo(ha.x, ha.y); ctx.lineTo(hb.x, hb.y); ctx.stroke();
+    ctx.restore();
   }
 
   // ── Hovercraft rendering ──────────────────────────────────────────────────
@@ -253,39 +283,66 @@
     const x=craft.x, w=craft.w;
     const gH=SH/BH;
 
-    // Hover skirt (flat wide base, slightly darker)
-    drawBlock(x+0.02, r+0.02, gH, w-0.04, 0.14, _mix(topC,'#000',0.25), _mix(sideC,'#000',0.3), C.outline);
+    // Exhaust trail behind craft (drawn first, underneath)
+    _drawExhaustTrail(x, r, w, dir, topC);
+
+    // Hover skirt — wide bright-edged base that reads as "floating"
+    drawBlock(x+0.02, r+0.02, gH, w-0.04, 0.12, _mix(topC,'#ffffff',0.10), _mix(sideC,'#000',0.2), C.outline);
 
     // Main body
-    drawBlock(x+0.10, r+0.10, gH+0.14, w-0.20, 0.44, topC, sideC, C.outline);
+    drawBlock(x+0.08, r+0.08, gH+0.12, w-0.16, 0.46, topC, sideC, C.outline);
 
-    // Cockpit dome (type 0) or flat top (type 1)
+    // Cockpit dome
     if (craft.type===0) {
-      const dw=(w-0.20)*0.48, dc=(w-0.20-dw)/2;
-      drawBlock(x+0.10+dc, r+0.12, gH+0.58, dw, 0.30,
-        _mix(topC,'#ffffff',0.25), _mix(sideC,'#000',0.05), C.outline);
-      // Visor glass
-      const vp  = proj(x+0.10+dc+0.06, r+0.14, gH+0.75);
-      const vp2 = proj(x+0.10+dc+dw-0.06, r+0.14, gH+0.75);
-      ctx.save(); ctx.globalAlpha=0.6; ctx.fillStyle=C.hcGlass;
-      ctx.beginPath(); ctx.moveTo(vp.x,vp.y); ctx.lineTo(vp2.x,vp2.y); ctx.lineTo(vp2.x,vp2.y-BH*0.18); ctx.lineTo(vp.x,vp.y-BH*0.18); ctx.closePath(); ctx.fill(); ctx.restore();
+      const dw=(w-0.16)*0.50, dc=(w-0.16-dw)/2;
+      drawBlock(x+0.08+dc, r+0.10, gH+0.58, dw, 0.32,
+        _mix(topC,'#ffffff',0.28), _mix(sideC,'#000',0.05), C.outline);
+      // Glass visor
+      const vp  = proj(x+0.08+dc+0.05, r+0.12, gH+0.76);
+      const vp2 = proj(x+0.08+dc+dw-0.05, r+0.12, gH+0.76);
+      ctx.save(); ctx.globalAlpha=0.65; ctx.fillStyle=C.hcGlass;
+      ctx.beginPath(); ctx.moveTo(vp.x,vp.y); ctx.lineTo(vp2.x,vp2.y);
+      ctx.lineTo(vp2.x,vp2.y-BH*0.20); ctx.lineTo(vp.x,vp.y-BH*0.20); ctx.closePath(); ctx.fill();
+      ctx.restore();
     }
 
-    // Thrust glow underneath (small orange dots)
+    // Pulsing thrust pods underneath
     _drawThrustGlow(x, r, w, gH, topC);
   }
 
+  function _drawExhaustTrail (x, r, w, dir, col) {
+    // Trail extends behind the craft in its travel direction
+    const trailDir = dir > 0 ? -1 : 1;  // trail goes opposite to movement
+    const trailLen = 1.2;
+    for (let i=0; i<6; i++) {
+      const frac = i / 6;
+      const tx2  = x + w*0.5 + trailDir * (0.3 + frac * trailLen);
+      const p    = proj(tx2, r + 0.45, SH/BH + 0.06);
+      const radius = BH * (0.10 - frac * 0.07);
+      if (radius <= 0) continue;
+      ctx.save();
+      ctx.globalAlpha = 0.55 * (1 - frac) * (0.6 + 0.4 * Math.abs(Math.sin(performance.now()*0.006 + i)));
+      ctx.fillStyle   = i < 2 ? C.hcThrust : C.hcTrail;
+      ctx.beginPath(); ctx.arc(p.x, p.y, radius, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
+
   function _drawThrustGlow (x, r, w, gH, col) {
-    const t = performance.now()*0.004;
-    const glow = Math.abs(Math.sin(t + x))*0.5+0.4;
-    const p1 = proj(x+0.18, r+0.5, gH-0.06);
-    const p2 = proj(x+w-0.22, r+0.5, gH-0.06);
-    ctx.save();
-    ctx.globalAlpha = glow*0.8;
-    ctx.fillStyle = C.hcThrust;
-    ctx.beginPath(); ctx.arc(p1.x, p1.y, BH*0.09, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(p2.x, p2.y, BH*0.09, 0, Math.PI*2); ctx.fill();
-    ctx.restore();
+    const t = performance.now()*0.005;
+    for (let i=0; i<3; i++) {
+      const glow = 0.5 + 0.5 * Math.abs(Math.sin(t + x + i));
+      const px2  = proj(x + 0.18 + i * (w-0.36) * 0.5, r + 0.48, gH - 0.08);
+      ctx.save();
+      ctx.globalAlpha = glow * 0.85;
+      ctx.fillStyle   = C.hcThrust;
+      ctx.beginPath(); ctx.arc(px2.x, px2.y, BH*0.085, 0, Math.PI*2); ctx.fill();
+      // Inner white-hot core
+      ctx.globalAlpha = glow * 0.60;
+      ctx.fillStyle   = '#ffffff';
+      ctx.beginPath(); ctx.arc(px2.x, px2.y, BH*0.035, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
   }
 
   function _mix (hex, hex2, t) {
@@ -295,54 +352,80 @@
   }
 
   // ── Rock platform rendering ───────────────────────────────────────────────
+  // Reads as "floating elevated rock" — dark interior, bright lava-lit base edge
   function renderRockPlatform (r, plat) {
     const gH=SH/BH;
-    // Main slab
-    drawBlock(plat.x, r+0.08, gH, plat.w, 0.28, C.platTop, C.platSide, C.outline);
+    const H_PLAT = 0.32;
+
+    // Shadow on lava below — shows it's floating
+    const sA=proj(plat.x+0.1,       r+0.12, gH-0.04);
+    const sB=proj(plat.x+plat.w-0.1,r+0.12, gH-0.04);
+    const sC2=proj(plat.x+plat.w-0.1,r+0.88,gH-0.04);
+    const sD=proj(plat.x+0.1,       r+0.88, gH-0.04);
+    ctx.save(); ctx.globalAlpha=0.45; ctx.fillStyle='#000';
+    ctx.beginPath(); ctx.moveTo(sA.x,sA.y); ctx.lineTo(sB.x,sB.y); ctx.lineTo(sC2.x,sC2.y); ctx.lineTo(sD.x,sD.y); ctx.closePath(); ctx.fill(); ctx.restore();
+
+    // Main slab — darker rock color so it contrasts the lava
+    drawBlock(plat.x+0.04, r+0.08, gH, plat.w-0.08, H_PLAT, C.platTop, C.platSide, C.outline);
+
+    // Bright lava-glow underside line — the key "floating over lava" cue
+    const edA=proj(plat.x+0.04,        r+0.08, gH+0.01);
+    const edB=proj(plat.x+plat.w-0.04, r+0.08, gH+0.01);
+    const pulse = 0.7 + 0.3 * Math.abs(Math.sin(performance.now()*0.002 + plat.x));
+    ctx.save(); ctx.strokeStyle=C.platEdge; ctx.lineWidth=3; ctx.globalAlpha=pulse;
+    ctx.beginPath(); ctx.moveTo(edA.x, edA.y); ctx.lineTo(edB.x, edB.y); ctx.stroke();
+    ctx.strokeStyle=C.lavaHot; ctx.lineWidth=1.2; ctx.globalAlpha=pulse*0.65;
+    ctx.beginPath(); ctx.moveTo(edA.x, edA.y-1); ctx.lineTo(edB.x, edB.y-1); ctx.stroke();
+    ctx.restore();
+
     // Crack details
     const segs=Math.max(1,Math.round(plat.w));
     for (let i=1; i<segs; i++) {
-      const xp=plat.x+(plat.w/segs)*i;
-      const pa=proj(xp+0.05, r+0.08, gH+0.28);
-      const pb=proj(xp-0.05, r+0.08+0.7, gH+0.28);
-      ctx.save(); ctx.globalAlpha=0.35; ctx.strokeStyle=C.platCrack; ctx.lineWidth=1.5;
+      const xp=plat.x+0.04+(plat.w-0.08)/segs*i;
+      const pa=proj(xp, r+0.10, gH+H_PLAT);
+      const pb=proj(xp, r+0.82, gH+H_PLAT);
+      ctx.save(); ctx.globalAlpha=0.40; ctx.strokeStyle=C.platCrack; ctx.lineWidth=1.5;
       ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.stroke(); ctx.restore();
     }
-    // Lava glow on edge
-    const p1=proj(plat.x, r+0.08, gH); const p2=proj(plat.x+plat.w, r+0.08, gH);
-    ctx.save(); ctx.globalAlpha=0.45; ctx.strokeStyle=C.lavaGlow; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(p1.x,p1.y-2); ctx.lineTo(p2.x,p2.y-2); ctx.stroke(); ctx.restore();
   }
 
   // ── Crystal spire rendering ───────────────────────────────────────────────
+  // Teal/cyan crystals on purple ground — maximum contrast, reads as obstacle
   function renderCrystal (col, row, variant) {
     const gH=SH/BH;
-    // Base cluster — 1-3 shards depending on variant
     const configs = [
-      // variant 0: single tall spire
-      [{x:0.28,z:0.20,w:0.44,bh:0.70},{x:0.36,z:0.24,w:0.28,bh:1.05},{x:0.40,z:0.28,w:0.20,bh:0.50}],
-      // variant 1: two side-by-side shards
-      [{x:0.12,z:0.18,w:0.36,bh:0.60},{x:0.14,z:0.22,w:0.22,bh:0.90},
-       {x:0.52,z:0.22,w:0.36,bh:0.55},{x:0.54,z:0.26,w:0.22,bh:0.80}],
-      // variant 2: wide squat cluster
-      [{x:0.10,z:0.16,w:0.80,bh:0.40},{x:0.22,z:0.20,w:0.56,bh:0.62},{x:0.34,z:0.26,w:0.32,bh:0.82}],
+      // variant 0: single tall spire + two small flankers
+      [{x:0.10,z:0.30,w:0.22,bh:0.50},{x:0.68,z:0.28,w:0.22,bh:0.40},  // flankers
+       {x:0.28,z:0.18,w:0.44,bh:0.65},{x:0.36,z:0.22,w:0.28,bh:1.10}], // main
+      // variant 1: two equal spires
+      [{x:0.08,z:0.16,w:0.38,bh:0.55},{x:0.10,z:0.20,w:0.24,bh:0.95},
+       {x:0.52,z:0.18,w:0.38,bh:0.50},{x:0.54,z:0.22,w:0.24,bh:0.85}],
+      // variant 2: wide flat cluster
+      [{x:0.06,z:0.14,w:0.88,bh:0.38},{x:0.18,z:0.18,w:0.64,bh:0.58},{x:0.32,z:0.24,w:0.36,bh:0.80}],
     ];
     const shards = configs[variant % configs.length];
 
     for (let i=0; i<shards.length; i++) {
       const s=shards[i];
-      const factor = 1 - i*0.08;
-      const tC = i===shards.length-1 ? C.xtalTipA : C.xtalBase;
-      const sC = i===shards.length-1 ? C.xtalTipB : C.xtalSide;
-      drawBlock(col+s.x, row+s.z, gH, s.w, s.bh*factor, tC, sC, C.outline);
+      // Tips get the bright white-cyan; base gets medium teal
+      const isTip = i >= shards.length - 2;
+      const tC = isTip ? C.xtalTipA : C.xtalBase;
+      const sC = isTip ? C.xtalTipB : C.xtalSide;
+      drawBlock(col+s.x, row+s.z, gH, s.w, s.bh, tC, sC, 'rgba(0,0,0,0.50)');
     }
 
-    // Glow halo on the tip
-    const tip=shards[shards.length-1];
-    const tipP=proj(col+tip.x+tip.w*0.5, row+tip.z, gH+tip.bh*0.9+0.12);
-    ctx.save(); ctx.globalAlpha=0.25+0.15*Math.abs(Math.sin(performance.now()*0.002+col*1.3));
-    ctx.fillStyle=C.xtalGlow;
-    ctx.beginPath(); ctx.arc(tipP.x, tipP.y, BH*0.22, 0, Math.PI*2); ctx.fill(); ctx.restore();
+    // Large animated glow halo — makes crystals visible from a distance
+    const tip = shards[shards.length-1];
+    const tipP = proj(col+tip.x+tip.w*0.5, row+tip.z+0.2, gH+tip.bh+0.20);
+    const glowA = 0.30 + 0.22*Math.abs(Math.sin(performance.now()*0.0025+col*1.8));
+    ctx.save();
+    const grd = ctx.createRadialGradient(tipP.x,tipP.y,0, tipP.x,tipP.y, BH*0.38);
+    grd.addColorStop(0, C.xtalGlow);
+    grd.addColorStop(1, 'rgba(160,255,252,0)');
+    ctx.globalAlpha = glowA;
+    ctx.fillStyle   = grd;
+    ctx.beginPath(); ctx.arc(tipP.x, tipP.y, BH*0.38, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
   }
 
   // ── Astronaut rendering ───────────────────────────────────────────────────
@@ -369,6 +452,9 @@
 
     // Body (chunky torso)
     drawBlock(col+0.12, row+0.16, base+0.42,     0.76, 0.60, suitColor, C.suitS,    C.outline);
+
+    // Orange stripe across chest — the key "astronaut suit" read cue
+    drawBlock(col+0.12, row+0.16, base+0.42+0.18, 0.76, 0.16, C.suitStripe, C.suitStripeS, C.outline);
 
     // Life-support backpack (on the back = far side, so render behind body)
     drawBlock(col+0.20, row+0.68, base+0.42,     0.60, 0.20, C.packTop, C.packSide, C.outline);
