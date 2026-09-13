@@ -809,8 +809,41 @@
     const drawStart=Math.max(0,Math.floor(camRow)-1);
     for (let r=drawEnd; r>=drawStart; r--) renderLane(r);
 
+    // Player landing indicator (drawn before player so it appears under them)
+    _renderLandingIndicator();
+
     // Player
     _renderPlayer();
+  }
+
+  // Glowing ring on the ground tile the player occupies / is jumping toward
+  function _renderLandingIndicator () {
+    if (!alive) return;
+
+    const pulse = 0.55 + 0.45 * Math.abs(Math.sin(performance.now() * 0.004));
+
+    if (jumping) {
+      // Show target ring at destination — pulses faster during jump
+      const fastPulse = 0.5 + 0.5 * Math.abs(Math.sin(performance.now() * 0.012));
+      _drawRing(jumpTo.col + 0.5, jumpTo.row + 0.45, '#ffffff', fastPulse * 0.85, TW * 0.52, TW * 0.14);
+      _drawRing(jumpTo.col + 0.5, jumpTo.row + 0.45, '#00ffcc', fastPulse * 0.55, TW * 0.36, TW * 0.07);
+    } else {
+      // Standing ring under player
+      _drawRing(player.col + 0.5, player.row + 0.45, '#ffffff', pulse * 0.45, TW * 0.50, TW * 0.12);
+      _drawRing(player.col + 0.5, player.row + 0.45, '#00ffcc', pulse * 0.30, TW * 0.34, TW * 0.06);
+    }
+  }
+
+  function _drawRing (col, row, color, alpha, rx, ry) {
+    const p = proj(col, row, SH / BH + 0.01);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = color;
+    ctx.lineWidth   = 2.5;
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y, rx, ry, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
   }
 
   function _renderPlayer () {
