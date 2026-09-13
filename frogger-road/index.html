@@ -9,173 +9,399 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #1a1a2e;
+      --bg: #16213e;
+      --panel: rgba(10,12,28,0.88);
+      --accent: #4ade80;
       --ui-font: 'Segoe UI', system-ui, sans-serif;
+      --panel-w: 200px;
     }
 
     body {
       background: var(--bg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100svh;
       font-family: var(--ui-font);
       overflow: hidden;
       user-select: none;
+      display: grid;
+      /* [left-panel] [game] [right-panel] */
+      grid-template-columns: var(--panel-w) 1fr var(--panel-w);
+      grid-template-rows: 100svh;
     }
 
+    /* ── Game canvas area ──────────────────────────── */
+    #game-area {
+      position: relative;
+      grid-column: 2;
+      grid-row: 1;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+    }
+
+    /* ── HUD (score + back link, floats over canvas) ── */
     #hud {
-      position: fixed;
+      position: absolute;
       top: 0; left: 0; right: 0;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      padding: 14px 20px 0;
+      padding: 14px 16px 0;
       z-index: 10;
       pointer-events: none;
     }
 
     #score-display {
-      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-size: clamp(2rem, 5vw, 3rem);
       font-weight: 900;
       color: #fff;
-      text-shadow: 0 3px 0 rgba(0,0,0,0.4);
+      text-shadow: 0 3px 0 rgba(0,0,0,0.5);
       letter-spacing: -0.02em;
       line-height: 1;
     }
 
     #back-btn {
       pointer-events: all;
-      background: rgba(255,255,255,0.12);
-      border: none;
-      color: rgba(255,255,255,0.7);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.6);
       font-family: var(--ui-font);
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      padding: 6px 14px;
+      padding: 5px 13px;
       border-radius: 20px;
       cursor: pointer;
       text-decoration: none;
       display: inline-block;
-      transition: background 0.2s;
+      transition: background 0.2s, color 0.2s;
     }
-    #back-btn:hover { background: rgba(255,255,255,0.22); }
+    #back-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
 
-    canvas {
+    /* ── Side panels ───────────────────────────────── */
+    .side-panel {
+      grid-row: 1;
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow: hidden;
+    }
+
+    #panel-left  { grid-column: 1; border-right: 1px solid rgba(255,255,255,0.06); }
+    #panel-right { grid-column: 3; border-left:  1px solid rgba(255,255,255,0.06); }
+
+    .panel-section {
+      background: var(--panel);
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .panel-heading {
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 10px;
+    }
+
+    /* ── Controls key display ── */
+    .key-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      width: 100%;
+      max-width: 120px;
+      margin: 0 auto;
+    }
+    .key {
+      aspect-ratio: 1;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-bottom: 3px solid rgba(0,0,0,0.35);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.8);
+    }
+    .key.spacer { background: transparent; border: none; }
+    .key-label {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.4);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* ── Lane legend ── */
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px;
+    }
+    .legend-item:last-child { margin-bottom: 0; }
+    .legend-swatch {
+      width: 28px;
+      height: 16px;
+      border-radius: 4px;
+      flex: none;
+    }
+    .legend-text {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.3;
+    }
+    .legend-text strong {
       display: block;
-      /* canvas is sized by JS */
-      image-rendering: pixelated;
+      color: rgba(255,255,255,0.88);
+      font-size: 0.78rem;
     }
 
-    /* ---- Overlays ---- */
+    /* ── Tip text ── */
+    .tip-line {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.42);
+      line-height: 1.5;
+      border-left: 2px solid rgba(255,255,255,0.1);
+      padding-left: 8px;
+    }
+    .tip-line + .tip-line { margin-top: 6px; }
+
+    /* ── Score panel (right) ── */
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .stat-row:last-child { margin-bottom: 0; }
+    .stat-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+    }
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 0 rgba(0,0,0,0.4);
+    }
+    #panel-best-val { color: var(--accent); }
+
+    /* ── Overlays ────────────────────────────────────── */
     .overlay {
-      position: fixed;
+      position: absolute;
       inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 1.25rem;
+      gap: 1rem;
       z-index: 20;
       padding: 2rem;
     }
 
     .overlay-box {
-      background: rgba(15, 15, 30, 0.92);
-      backdrop-filter: blur(12px);
+      background: rgba(8, 10, 24, 0.94);
+      backdrop-filter: blur(16px);
       border-radius: 20px;
-      padding: 2.5rem 3rem;
+      padding: 2.25rem 2.5rem;
       text-align: center;
-      max-width: 360px;
+      max-width: 320px;
       width: 100%;
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
     }
 
-    .overlay-title {
-      font-size: clamp(1.8rem, 6vw, 2.75rem);
-      font-weight: 900;
-      color: #fff;
-      letter-spacing: -0.03em;
+    .overlay-emoji {
+      font-size: 3rem;
+      line-height: 1;
       margin-bottom: 0.5rem;
     }
 
+    .overlay-title {
+      font-size: clamp(1.6rem, 5vw, 2.2rem);
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.4rem;
+    }
+
     .overlay-sub {
-      font-size: 0.9rem;
-      color: rgba(255,255,255,0.5);
-      margin-bottom: 1.75rem;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 1.5rem;
       line-height: 1.5;
     }
 
-    .overlay-score {
-      font-size: 1.1rem;
-      color: rgba(255,255,255,0.7);
-      margin-bottom: 0.25rem;
+    .overlay-score-big {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 0.2rem;
     }
-    .overlay-best {
-      font-size: 0.8rem;
-      color: rgba(255,255,255,0.35);
-      margin-bottom: 1.75rem;
+    .overlay-best-line {
+      font-size: 0.78rem;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.05em;
     }
 
     .play-btn {
-      background: #4ade80;
-      color: #0a1a12;
+      background: var(--accent);
+      color: #052010;
       font-weight: 900;
-      font-size: 1rem;
-      letter-spacing: 0.05em;
+      font-size: 0.95rem;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       border: none;
       border-radius: 50px;
-      padding: 0.9rem 2.5rem;
+      padding: 0.85rem 2rem;
       cursor: pointer;
-      transition: transform 0.1s, background 0.2s;
+      transition: transform 0.1s, background 0.15s, box-shadow 0.15s;
       font-family: var(--ui-font);
       width: 100%;
+      box-shadow: 0 4px 20px rgba(74,222,128,0.3);
     }
-    .play-btn:hover { background: #86efac; transform: scale(1.03); }
+    .play-btn:hover {
+      background: #86efac;
+      transform: scale(1.03);
+      box-shadow: 0 6px 28px rgba(74,222,128,0.45);
+    }
     .play-btn:active { transform: scale(0.97); }
 
-    .controls-hint {
-      font-size: 0.72rem;
-      color: rgba(255,255,255,0.25);
-      letter-spacing: 0.06em;
-      text-align: center;
-    }
-
     .hidden { display: none !important; }
+
+    /* ── Responsive: hide panels on small screens ── */
+    @media (max-width: 680px) {
+      body {
+        grid-template-columns: 1fr;
+      }
+      #game-area { grid-column: 1; }
+      #panel-left, #panel-right { display: none; }
+    }
   </style>
 </head>
 <body>
 
-<div id="hud">
-  <div id="score-display">0</div>
-  <a id="back-btn" href="../index.html">← Portfolio</a>
-</div>
+<!-- ── Left panel: controls + tips ─────────────────────── -->
+<aside class="side-panel" id="panel-left">
 
-<canvas id="canvas"></canvas>
-
-<!-- Start screen -->
-<div class="overlay" id="start-overlay">
-  <div class="overlay-box">
-    <div class="overlay-title">🐸 Frogger Road</div>
-    <div class="overlay-sub">Cross the road. Dodge the cars.<br>Don't get squished.</div>
-    <button class="play-btn" id="start-btn">Start</button>
+  <div class="panel-section">
+    <div class="panel-heading">Controls</div>
+    <div class="key-grid">
+      <div class="key spacer"></div>
+      <div class="key">↑</div>
+      <div class="key spacer"></div>
+      <div class="key">←</div>
+      <div class="key">↓</div>
+      <div class="key">→</div>
+    </div>
+    <div class="key-label">Arrow keys or WASD</div>
+    <div class="key-label" style="margin-top:4px">Swipe on mobile</div>
   </div>
-  <div class="controls-hint">Arrow keys / WASD — or swipe on mobile</div>
+
+  <div class="panel-section">
+    <div class="panel-heading">Lane Guide</div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#4a7c59"></div>
+      <div class="legend-text"><strong>Grass</strong>Safe to stand</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#4a4a5a"></div>
+      <div class="legend-text"><strong>Road</strong>Dodge cars</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#2a6fa8"></div>
+      <div class="legend-text"><strong>Water</strong>Ride the logs</div>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <div class="panel-heading">Tips</div>
+    <div class="tip-line">You can only move one tile at a time.</div>
+    <div class="tip-line" style="margin-top:6px">On water, stand still — the log carries you.</div>
+    <div class="tip-line" style="margin-top:6px">Score = furthest row reached.</div>
+  </div>
+
+</aside>
+
+<!-- ── Game area ─────────────────────────────────────────── -->
+<div id="game-area">
+  <div id="hud">
+    <div id="score-display">0</div>
+    <a id="back-btn" href="../index.html">← Portfolio</a>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <!-- Start screen -->
+  <div class="overlay" id="start-overlay">
+    <div class="overlay-box">
+      <div class="overlay-emoji">🐸</div>
+      <div class="overlay-title">Frogger Road</div>
+      <div class="overlay-sub">Cross the road. Ride the logs.<br>Don't get squished — or drown.</div>
+      <button class="play-btn" id="start-btn">Play</button>
+    </div>
+  </div>
+
+  <!-- Game over screen -->
+  <div class="overlay hidden" id="dead-overlay">
+    <div class="overlay-box">
+      <div class="overlay-emoji" id="dead-emoji">💀</div>
+      <div class="overlay-title" id="dead-title">Squished</div>
+      <div class="overlay-score-big" id="final-score">0</div>
+      <div class="overlay-best-line" id="best-score">Best: 0</div>
+      <button class="play-btn" id="restart-btn">Try Again</button>
+    </div>
+  </div>
 </div>
 
-<!-- Game over screen -->
-<div class="overlay hidden" id="dead-overlay">
-  <div class="overlay-box">
-    <div class="overlay-title">💀 Squished</div>
-    <div class="overlay-score" id="final-score">Score: 0</div>
-    <div class="overlay-best" id="best-score">Best: 0</div>
-    <button class="play-btn" id="restart-btn">Try Again</button>
+<!-- ── Right panel: live score + stats ──────────────────── -->
+<aside class="side-panel" id="panel-right">
+
+  <div class="panel-section">
+    <div class="panel-heading">Score</div>
+    <div class="stat-row">
+      <span class="stat-label">Now</span>
+      <span class="stat-value" id="panel-score-val">0</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Best</span>
+      <span class="stat-value" id="panel-best-val">0</span>
+    </div>
   </div>
-  <div class="controls-hint">Arrow keys / WASD — or swipe on mobile</div>
-</div>
+
+  <div class="panel-section">
+    <div class="panel-heading">Objective</div>
+    <div class="tip-line">Hop as far <strong style="color:#fff">forward</strong> (away from you) as possible without dying.</div>
+    <div class="tip-line" style="margin-top:6px">Each row further = +1 point.</div>
+  </div>
+
+  <div class="panel-section">
+    <div class="panel-heading">Hazards</div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#e84a4a; border-radius:3px"></div>
+      <div class="legend-text">Cars — instant death on contact</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#2a6fa8; border-radius:3px"></div>
+      <div class="legend-text">Water — drown if not on a log</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#4a6b35; border-radius:3px"></div>
+      <div class="legend-text">Trees — block your path</div>
+    </div>
+  </div>
+
+</aside>
 
 <script src="game.js"></script>
 </body>
