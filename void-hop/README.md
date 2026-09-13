@@ -2,7 +2,7 @@
 
 A Crossy Road-style browser game set on an alien planet — built entirely in vanilla JavaScript with Canvas 2D. No libraries, no framework, no audio files.
 
-**Play it:** [0l-l.github.io/frogger-road/](https://0l-l.github.io/frogger-road/)
+**Play it:** [0l-l.github.io/void-hop/](https://0l-l.github.io/void-hop/)
 
 ---
 

@@ -9,7 +9,7 @@ Full record of the build session with Kiro (AI agent) on 2026-09-13.
 **Duration:** ~1.5 hours  
 **Commits:** 9  
 **Final name:** Void Hop  
-**Live URL:** [0l-l.github.io/frogger-road/](https://0l-l.github.io/frogger-road/)
+**Live URL:** [0l-l.github.io/void-hop/](https://0l-l.github.io/void-hop/)
 
 ---
 
