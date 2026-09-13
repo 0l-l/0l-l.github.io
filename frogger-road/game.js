@@ -86,6 +86,131 @@
     [C.hcBlue,   C.hcBlueS],
   ];
 
+  // ── Audio engine (Web Audio API, no files) ────────────────────────────────
+  // AudioContext is created lazily on first user gesture to comply with
+  // autoplay policies. All sounds are synthesized procedurally.
+  let _ac = null;
+
+  function _getAC () {
+    if (!_ac) _ac = new (window.AudioContext || window.webkitAudioContext)();
+    if (_ac.state === 'suspended') _ac.resume();
+    return _ac;
+  }
+
+  // Generic envelope helper: creates gain node with attack/decay/sustain/release
+  function _adsr (ac, t, a, d, s, r) {
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(1, t + a);
+    g.gain.linearRampToValueAtTime(s, t + a + d);
+    g.gain.setValueAtTime(s, t + a + d + 0.001);
+    g.gain.linearRampToValueAtTime(0, t + a + d + r);
+    return g;
+  }
+
+  const SFX = {
+    // Hop: quick pitched blip — feels snappy like Crossy Road
+    hop () {
+      try {
+        const ac = _getAC(), t = ac.currentTime;
+        const osc = ac.createOscillator();
+        const g   = _adsr(ac, t, 0.002, 0.04, 0.0, 0.06);
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(520, t);
+        osc.frequency.linearRampToValueAtTime(680, t + 0.03);
+        osc.connect(g); g.connect(ac.destination);
+        osc.start(t); osc.stop(t + 0.12);
+      } catch(e) {}
+    },
+
+    // Land: soft percussive thud
+    land () {
+      try {
+        const ac = _getAC(), t = ac.currentTime;
+        const buf = ac.createBuffer(1, ac.sampleRate * 0.08, ac.sampleRate);
+        const d   = buf.getChannelData(0);
+        for (let i=0; i<d.length; i++) d[i] = (Math.random()*2-1) * Math.exp(-i / (d.length * 0.25));
+        const src = ac.createBufferSource();
+        const filt= ac.createBiquadFilter();
+        const g   = ac.createGain();
+        src.buffer = buf;
+        filt.type  = 'lowpass'; filt.frequency.value = 300;
+        g.gain.setValueAtTime(0.55, t);
+        g.gain.linearRampToValueAtTime(0, t + 0.08);
+        src.connect(filt); filt.connect(g); g.connect(ac.destination);
+        src.start(t);
+      } catch(e) {}
+    },
+
+    // Vaporized: sharp descending laser zap
+    vaporized () {
+      try {
+        const ac = _getAC(), t = ac.currentTime;
+        const osc = ac.createOscillator();
+        const g   = _adsr(ac, t, 0.003, 0.0, 0.6, 0.25);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(900, t);
+        osc.frequency.exponentialRampToValueAtTime(80, t + 0.28);
+        const dist = ac.createWaveShaper();
+        const curve = new Float32Array(256);
+        for (let i=0; i<256; i++) { const x=i*2/256-1; curve[i]=x<0?-1:x>0.3?1:x/0.3; }
+        dist.curve = curve;
+        osc.connect(dist); dist.connect(g); g.connect(ac.destination);
+        osc.start(t); osc.stop(t + 0.30);
+      } catch(e) {}
+    },
+
+    // Incinerated (lava death): low bubbling hiss
+    incinerated () {
+      try {
+        const ac = _getAC(), t = ac.currentTime;
+        // Noise burst
+        const buf = ac.createBuffer(1, ac.sampleRate * 0.5, ac.sampleRate);
+        const d   = buf.getChannelData(0);
+        for (let i=0; i<d.length; i++) d[i] = (Math.random()*2-1);
+        const src  = ac.createBufferSource();
+        const filt = ac.createBiquadFilter();
+        const g    = ac.createGain();
+        src.buffer = buf;
+        filt.type  = 'bandpass'; filt.frequency.value = 180; filt.Q.value = 1.2;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.7, t + 0.04);
+        g.gain.linearRampToValueAtTime(0.4, t + 0.2);
+        g.gain.linearRampToValueAtTime(0,   t + 0.50);
+        src.connect(filt); filt.connect(g); g.connect(ac.destination);
+        src.start(t);
+        // Low rumble oscillator
+        const osc = ac.createOscillator();
+        const g2  = ac.createGain();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(60, t);
+        osc.frequency.linearRampToValueAtTime(30, t + 0.4);
+        g2.gain.setValueAtTime(0.5, t);
+        g2.gain.linearRampToValueAtTime(0, t + 0.4);
+        osc.connect(g2); g2.connect(ac.destination);
+        osc.start(t); osc.stop(t + 0.5);
+      } catch(e) {}
+    },
+
+    // Milestone: ascending two-tone chime every 10 points
+    milestone () {
+      try {
+        const ac = _getAC(), t = ac.currentTime;
+        [523, 784, 1047].forEach((freq, i) => {
+          const osc = ac.createOscillator();
+          const g   = ac.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          const start = t + i * 0.10;
+          g.gain.setValueAtTime(0, start);
+          g.gain.linearRampToValueAtTime(0.4, start + 0.015);
+          g.gain.linearRampToValueAtTime(0, start + 0.18);
+          osc.connect(g); g.connect(ac.destination);
+          osc.start(start); osc.stop(start + 0.20);
+        });
+      } catch(e) {}
+    },
+  };
+
   // ── RNG ───────────────────────────────────────────────────────────────────
   let _s = 1;
   function rng () { _s ^= _s<<13; _s ^= _s>>17; _s ^= _s<<5; return (_s>>>0)/0x100000000; }
@@ -548,6 +673,7 @@
     jumpFrom={col:player.col,row:player.row};
     jumpTo={col:nc,row:nr};
     jumping=true; jumpT=0;
+    SFX.hop();
   }
 
   // ── Update ────────────────────────────────────────────────────────────────
@@ -559,7 +685,11 @@
       if (jumpT>=JUMP_DUR) {
         player.col=jumpTo.col; player.row=jumpTo.row;
         jumping=false;
-        if (player.row>score) { score=player.row; _setScore(score); }
+        SFX.land();
+        if (player.row>score) {
+          score=player.row; _setScore(score);
+          if (score > 0 && score % 10 === 0) SFX.milestone();
+        }
       }
     }
 
@@ -609,6 +739,7 @@
     alive=false; deathKind=kind; deathTimer=0;
     deathCol=player.col; deathRow=player.row;
     if (score>best) { best=score; localStorage.setItem('fr_best',best); }
+    if (kind==='hit') SFX.vaporized(); else SFX.incinerated();
   }
 
   function _showDead () {
