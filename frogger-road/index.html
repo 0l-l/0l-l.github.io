@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Frogger Road — Oulan Li</title>
-  <meta name="description" content="A chunky, blocky Crossy Road-style game built in JavaScript by Oulan Li." />
+  <title>Astro Hop — Oulan Li</title>
+  <meta name="description" content="A chunky, blocky Crossy Road-style space game built in JavaScript by Oulan Li." />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --bg: #16213e;
       --panel: rgba(10,12,28,0.88);
-      --accent: #4ade80;
+      --accent: #b060ff;
       --ui-font: 'Segoe UI', system-ui, sans-serif;
       --panel-w: 200px;
     }
@@ -256,7 +256,7 @@
 
     .play-btn {
       background: var(--accent);
-      color: #052010;
+      color: #0d0018;
       font-weight: 900;
       font-size: 0.95rem;
       letter-spacing: 0.06em;
@@ -312,23 +312,23 @@
   <div class="panel-section">
     <div class="panel-heading">Lane Guide</div>
     <div class="legend-item">
-      <div class="legend-swatch" style="background:#4a7c59"></div>
-      <div class="legend-text"><strong>Grass</strong>Safe to stand</div>
+      <div class="legend-swatch" style="background:#7a5c9e"></div>
+      <div class="legend-text"><strong>Rock Field</strong>Safe to stand</div>
     </div>
     <div class="legend-item">
-      <div class="legend-swatch" style="background:#4a4a5a"></div>
-      <div class="legend-text"><strong>Road</strong>Dodge cars</div>
+      <div class="legend-swatch" style="background:#1a3a4a"></div>
+      <div class="legend-text"><strong>Hover Lane</strong>Dodge crafts</div>
     </div>
     <div class="legend-item">
-      <div class="legend-swatch" style="background:#2a6fa8"></div>
-      <div class="legend-text"><strong>Water</strong>Ride the logs</div>
+      <div class="legend-swatch" style="background:#c84800"></div>
+      <div class="legend-text"><strong>Lava Flow</strong>Ride the rocks</div>
     </div>
   </div>
 
   <div class="panel-section">
     <div class="panel-heading">Tips</div>
     <div class="tip-line">You can only move one tile at a time.</div>
-    <div class="tip-line" style="margin-top:6px">On water, stand still — the log carries you.</div>
+    <div class="tip-line" style="margin-top:6px">On lava, stand still — the rock carries you.</div>
     <div class="tip-line" style="margin-top:6px">Score = furthest row reached.</div>
   </div>
 
@@ -346,9 +346,9 @@
   <!-- Start screen -->
   <div class="overlay" id="start-overlay">
     <div class="overlay-box">
-      <div class="overlay-emoji">🐸</div>
-      <div class="overlay-title">Frogger Road</div>
-      <div class="overlay-sub">Cross the road. Ride the logs.<br>Don't get squished — or drown.</div>
+      <div class="overlay-emoji">🚀</div>
+      <div class="overlay-title">Astro Hop</div>
+      <div class="overlay-sub">Cross the hover lanes. Ride the lava rocks.<br>Don't get vaporized.</div>
       <button class="play-btn" id="start-btn">Play</button>
     </div>
   </div>
@@ -383,22 +383,21 @@
   <div class="panel-section">
     <div class="panel-heading">Objective</div>
     <div class="tip-line">Hop as far <strong style="color:#fff">forward</strong> (away from you) as possible without dying.</div>
-    <div class="tip-line" style="margin-top:6px">Each row further = +1 point.</div>
   </div>
 
   <div class="panel-section">
     <div class="panel-heading">Hazards</div>
     <div class="legend-item">
-      <div class="legend-swatch" style="background:#e84a4a; border-radius:3px"></div>
-      <div class="legend-text">Cars — instant death on contact</div>
+      <div class="legend-swatch" style="background:#00ffcc; border-radius:3px"></div>
+      <div class="legend-text">Hovercrafts — instant death on contact</div>
     </div>
     <div class="legend-item">
-      <div class="legend-swatch" style="background:#2a6fa8; border-radius:3px"></div>
-      <div class="legend-text">Water — drown if not on a log</div>
+      <div class="legend-swatch" style="background:#c84800; border-radius:3px"></div>
+      <div class="legend-text">Lava — incinerated if not on a rock</div>
     </div>
     <div class="legend-item">
-      <div class="legend-swatch" style="background:#4a6b35; border-radius:3px"></div>
-      <div class="legend-text">Trees — block your path</div>
+      <div class="legend-swatch" style="background:#9860c8; border-radius:3px"></div>
+      <div class="legend-text">Crystals — block your path</div>
     </div>
   </div>
 
