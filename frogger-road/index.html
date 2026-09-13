@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frogger Road — Oulan Li</title>
+  <meta name="description" content="A chunky, blocky Crossy Road-style game built in JavaScript by Oulan Li." />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #1a1a2e;
+      --ui-font: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100svh;
+      font-family: var(--ui-font);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    #hud {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 14px 20px 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    #score-display {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 3px 0 rgba(0,0,0,0.4);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    #back-btn {
+      pointer-events: all;
+      background: rgba(255,255,255,0.12);
+      border: none;
+      color: rgba(255,255,255,0.7);
+      font-family: var(--ui-font);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.2s;
+    }
+    #back-btn:hover { background: rgba(255,255,255,0.22); }
+
+    canvas {
+      display: block;
+      /* canvas is sized by JS */
+      image-rendering: pixelated;
+    }
+
+    /* ---- Overlays ---- */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.25rem;
+      z-index: 20;
+      padding: 2rem;
+    }
+
+    .overlay-box {
+      background: rgba(15, 15, 30, 0.92);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 2.5rem 3rem;
+      text-align: center;
+      max-width: 360px;
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .overlay-title {
+      font-size: clamp(1.8rem, 6vw, 2.75rem);
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+    }
+
+    .overlay-sub {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 1.75rem;
+      line-height: 1.5;
+    }
+
+    .overlay-score {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 0.25rem;
+    }
+    .overlay-best {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 1.75rem;
+    }
+
+    .play-btn {
+      background: #4ade80;
+      color: #0a1a12;
+      font-weight: 900;
+      font-size: 1rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 50px;
+      padding: 0.9rem 2.5rem;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.2s;
+      font-family: var(--ui-font);
+      width: 100%;
+    }
+    .play-btn:hover { background: #86efac; transform: scale(1.03); }
+    .play-btn:active { transform: scale(0.97); }
+
+    .controls-hint {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.06em;
+      text-align: center;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div id="hud">
+  <div id="score-display">0</div>
+  <a id="back-btn" href="../index.html">← Portfolio</a>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<!-- Start screen -->
+<div class="overlay" id="start-overlay">
+  <div class="overlay-box">
+    <div class="overlay-title">🐸 Frogger Road</div>
+    <div class="overlay-sub">Cross the road. Dodge the cars.<br>Don't get squished.</div>
+    <button class="play-btn" id="start-btn">Start</button>
+  </div>
+  <div class="controls-hint">Arrow keys / WASD — or swipe on mobile</div>
+</div>
+
+<!-- Game over screen -->
+<div class="overlay hidden" id="dead-overlay">
+  <div class="overlay-box">
+    <div class="overlay-title">💀 Squished</div>
+    <div class="overlay-score" id="final-score">Score: 0</div>
+    <div class="overlay-best" id="best-score">Best: 0</div>
+    <button class="play-btn" id="restart-btn">Try Again</button>
+  </div>
+  <div class="controls-hint">Arrow keys / WASD — or swipe on mobile</div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
