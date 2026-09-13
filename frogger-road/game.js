@@ -53,15 +53,16 @@
     hcThrust: '#ff8800',
     hcTrail:  '#ffcc44',
     // Lava flow — unmistakably LAVA: vivid red-orange base, bright crack lines
-    lavaA:    '#d04000', lavaB:    '#b83200', lavaC:    '#e85000',
-    lavaSide: '#8c2400',
-    lavaCrack:'#ff9900', // bright orange crack glow between tiles
-    lavaHot:  '#ffdd00', // hottest crack center
-    lavaCool: '#cc3300',
-    // Rock platform (floats over lava) — clearly elevated: bright edge, dark shadow
-    platTop:  '#8a7a8a', platSide: '#5a4a5a', platDark: '#2e202e',
-    platEdge: '#ffaa44', // hot lava-lit bottom edge
-    platCrack:'#4a3048',
+    lavaA:    '#5a1800', lavaB:    '#4a1000', lavaC:    '#6a2000',
+    lavaSide: '#2e0800',
+    lavaCrack:'#ff7700', // orange crack glow
+    lavaHot:  '#ffee00', // yellow-white hottest crack center
+    lavaCool: '#cc2200',
+    // Rock platform — clearly a rock chunk: warm brown-grey, visible texture
+    platTop:  '#7a6858', platMid:  '#8a7868', platLight:'#9e8c7e',
+    platSide: '#4a3828', platDark: '#2e2018',
+    platEdge: '#ff8822', // lava-lit underside glow
+    platCrack:'#3a2818',
     // Astronaut — orange suit stripe makes them instantly readable
     suitW:    '#dde0e8', suitS:    '#adb0b8', suitD:    '#7d8088',
     suitStripe:'#ff7700', suitStripeS:'#cc4400',
@@ -247,32 +248,33 @@
   function _renderLavaGlow (r) {
     const t = performance.now() * 0.0018;
 
-    // Crack lines between every tile column — bright orange veins
+    // Thick glowing veins between tile columns
     for (let c=0; c<=COLS; c++) {
-      const pulse = 0.55 + 0.45 * Math.abs(Math.sin(c * 1.7 + r * 0.9 + t));
+      const pulse = 0.60 + 0.40 * Math.abs(Math.sin(c * 1.7 + r * 0.9 + t));
       const pa = proj(c, r,   SH/BH + 0.005);
       const pb = proj(c, r+1, SH/BH + 0.005);
+      // Wide outer glow
       ctx.save();
       ctx.strokeStyle = C.lavaCrack;
-      ctx.lineWidth   = 2.5;
-      ctx.globalAlpha = pulse * 0.75;
+      ctx.lineWidth   = 4.5;
+      ctx.globalAlpha = pulse * 0.80;
       ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
-      // Bright hot center
+      // Bright inner core
       ctx.strokeStyle = C.lavaHot;
-      ctx.lineWidth   = 0.8;
-      ctx.globalAlpha = pulse * 0.50;
+      ctx.lineWidth   = 1.5;
+      ctx.globalAlpha = pulse * 0.60;
       ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
       ctx.restore();
     }
 
-    // Near-edge row crack — horizontal bright seam
+    // Horizontal crack at the near edge of the lane
     const ha = proj(0,    r, SH/BH + 0.005);
     const hb = proj(COLS, r, SH/BH + 0.005);
-    const pulse2 = 0.6 + 0.4 * Math.abs(Math.sin(r * 2.1 + t * 1.3));
+    const pulse2 = 0.65 + 0.35 * Math.abs(Math.sin(r * 2.1 + t * 1.3));
     ctx.save();
-    ctx.strokeStyle = C.lavaCrack;
-    ctx.lineWidth   = 2.5;
-    ctx.globalAlpha = pulse2 * 0.85;
+    ctx.strokeStyle = C.lavaCrack; ctx.lineWidth = 4.5; ctx.globalAlpha = pulse2 * 0.90;
+    ctx.beginPath(); ctx.moveTo(ha.x, ha.y); ctx.lineTo(hb.x, hb.y); ctx.stroke();
+    ctx.strokeStyle = C.lavaHot;   ctx.lineWidth = 1.5; ctx.globalAlpha = pulse2 * 0.60;
     ctx.beginPath(); ctx.moveTo(ha.x, ha.y); ctx.lineTo(hb.x, hb.y); ctx.stroke();
     ctx.restore();
   }
@@ -352,41 +354,53 @@
   }
 
   // ── Rock platform rendering ───────────────────────────────────────────────
-  // Reads as "floating elevated rock" — dark interior, bright lava-lit base edge
+  // Reads as a chunky boulder floating over lava:
+  //   • Warm brown-grey base (clearly rock, not metal)
+  //   • Raised texture patches on top (lighter/darker blocks) = rocky surface
+  //   • Bright orange lava-glow on the underside = hovering over heat
+  //   • Shadow cast downward = clearly elevated above the lava
   function renderRockPlatform (r, plat) {
-    const gH=SH/BH;
-    const H_PLAT = 0.32;
+    const gH  = SH/BH;
+    const pH  = 0.35;  // platform height
+    const x   = plat.x, w = plat.w;
+    const rOff= 0.06;  // row inset
 
-    // Shadow on lava below — shows it's floating
-    const sA=proj(plat.x+0.1,       r+0.12, gH-0.04);
-    const sB=proj(plat.x+plat.w-0.1,r+0.12, gH-0.04);
-    const sC2=proj(plat.x+plat.w-0.1,r+0.88,gH-0.04);
-    const sD=proj(plat.x+0.1,       r+0.88, gH-0.04);
-    ctx.save(); ctx.globalAlpha=0.45; ctx.fillStyle='#000';
+    // Drop shadow — dark pool on the lava below, proves it's floating
+    const sA = proj(x+0.15,   r+rOff+0.15, gH-0.05);
+    const sB = proj(x+w-0.15, r+rOff+0.15, gH-0.05);
+    const sC2= proj(x+w-0.15, r+rOff+0.85, gH-0.05);
+    const sD = proj(x+0.15,   r+rOff+0.85, gH-0.05);
+    ctx.save(); ctx.globalAlpha=0.50; ctx.fillStyle='#000';
     ctx.beginPath(); ctx.moveTo(sA.x,sA.y); ctx.lineTo(sB.x,sB.y); ctx.lineTo(sC2.x,sC2.y); ctx.lineTo(sD.x,sD.y); ctx.closePath(); ctx.fill(); ctx.restore();
 
-    // Main slab — darker rock color so it contrasts the lava
-    drawBlock(plat.x+0.04, r+0.08, gH, plat.w-0.08, H_PLAT, C.platTop, C.platSide, C.outline);
+    // Main rock body — warm brown-grey
+    drawBlock(x+0.05, r+rOff, gH, w-0.10, pH, C.platTop, C.platSide, C.outline);
 
-    // Bright lava-glow underside line — the key "floating over lava" cue
-    const edA=proj(plat.x+0.04,        r+0.08, gH+0.01);
-    const edB=proj(plat.x+plat.w-0.04, r+0.08, gH+0.01);
-    const pulse = 0.7 + 0.3 * Math.abs(Math.sin(performance.now()*0.002 + plat.x));
-    ctx.save(); ctx.strokeStyle=C.platEdge; ctx.lineWidth=3; ctx.globalAlpha=pulse;
-    ctx.beginPath(); ctx.moveTo(edA.x, edA.y); ctx.lineTo(edB.x, edB.y); ctx.stroke();
-    ctx.strokeStyle=C.lavaHot; ctx.lineWidth=1.2; ctx.globalAlpha=pulse*0.65;
-    ctx.beginPath(); ctx.moveTo(edA.x, edA.y-1); ctx.lineTo(edB.x, edB.y-1); ctx.stroke();
-    ctx.restore();
-
-    // Crack details
-    const segs=Math.max(1,Math.round(plat.w));
-    for (let i=1; i<segs; i++) {
-      const xp=plat.x+0.04+(plat.w-0.08)/segs*i;
-      const pa=proj(xp, r+0.10, gH+H_PLAT);
-      const pb=proj(xp, r+0.82, gH+H_PLAT);
-      ctx.save(); ctx.globalAlpha=0.40; ctx.strokeStyle=C.platCrack; ctx.lineWidth=1.5;
-      ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.stroke(); ctx.restore();
+    // Rocky texture: 2-3 raised sub-patches on top surface (lighter tone)
+    // These make the flat top read as uneven stone rather than a slab
+    const patches = Math.max(2, Math.floor(w * 1.5));
+    for (let i=0; i<patches; i++) {
+      // Use lane row + platform pos as deterministic seed
+      const px = x + 0.08 + (w-0.16) * (i / patches) + 0.04;
+      const pz = r + rOff + 0.12 + (i%2) * 0.22;
+      const pw2 = 0.28 + (i%3)*0.08;
+      const pd2 = 0.20 + (i%2)*0.12;
+      // Alternate light and mid tones
+      const tC  = i%2===0 ? C.platLight : C.platMid;
+      const sC3 = i%2===0 ? C.platTop   : C.platSide;
+      drawBlock(px, pz, gH+pH, pw2, pd2, 0.06, tC, sC3, null);
     }
+
+    // Lava-orange glowing underside edge — THE key "floating over lava" read
+    const pulse = 0.7 + 0.3 * Math.abs(Math.sin(performance.now()*0.0022 + x));
+    const eA = proj(x+0.05,   r+rOff, gH+0.005);
+    const eB = proj(x+w-0.05, r+rOff, gH+0.005);
+    ctx.save();
+    ctx.strokeStyle = C.platEdge; ctx.lineWidth = 4; ctx.globalAlpha = pulse*0.90;
+    ctx.beginPath(); ctx.moveTo(eA.x, eA.y); ctx.lineTo(eB.x, eB.y); ctx.stroke();
+    ctx.strokeStyle = C.lavaHot;  ctx.lineWidth = 1.5; ctx.globalAlpha = pulse*0.55;
+    ctx.beginPath(); ctx.moveTo(eA.x, eA.y-1); ctx.lineTo(eB.x, eB.y-1); ctx.stroke();
+    ctx.restore();
   }
 
   // ── Crystal spire rendering ───────────────────────────────────────────────
