@@ -239,25 +239,42 @@ a { color: inherit; }
 #cResume { left: 71.1%; top: 58.5%; }
 #cContact { left: 62.2%; top: 83.1%; }
 
-/* Game link — floats near the bottom-left of the canvas */
+/* Game links: small floating words that sit under the "HCI & Games" tag
+   and drift toward the cursor like everything else. The padding is an
+   invisible hit area so they are easy to click. */
 .mag-game {
   display: inline-block;
   font-family: var(--font-display);
   font-weight: 500;
-  font-size: clamp(0.85rem, 1.5vw, 1.15rem);
-  text-decoration: none;
+  font-size: clamp(0.78rem, 1.15vw, 0.95rem);
   color: var(--ink-soft);
-  border: 1px solid var(--rule-strong);
-  border-radius: 3px;
-  padding: 0.25rem 0.65rem;
-  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  padding: 0.6rem 0.75rem;
+  white-space: nowrap;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
 }
 .mag-game:hover, .mag-game:focus-visible {
   color: var(--ink);
-  border-color: var(--ink);
-  background: var(--select);
+  text-decoration-color: var(--ink);
 }
-#cGame { left: 8%; top: 80%; }
+/* pixel-art game icons: 10x10 grids drawn as SVG, colored by the link text */
+.pix {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.5em;
+  vertical-align: -5px;
+  transition: transform 0.12s steps(2);
+}
+a:hover .pix, a:focus-visible .pix { transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) {
+  .pix { transition: none; }
+  a:hover .pix, a:focus-visible .pix { transform: none; }
+}
+#cGame { left: 73%; top: 76%; }
+#cGame2 { left: 82%; top: 85.5%; }
 
 .hero-hint {
   margin: 1.5rem 0 0;

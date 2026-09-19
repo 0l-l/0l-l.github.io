@@ -1,0 +1,7 @@
+# No API key is needed (PokeAPI is keyless), but keep any future secrets out of git.
+.env
+.env.*
+config.local
+*.local
+.DS_Store
+node_modules/
