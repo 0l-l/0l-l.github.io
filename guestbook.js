@@ -1,9 +1,6 @@
 // Guestbook widget for the Contact page — talks to the Flask backend
 // deployed on Render (see the separate `guestbook-backend` repo).
-//
-// TODO: after you deploy the backend to Render, replace this with your
-// real Render URL, e.g. "https://oulan-guestbook-backend.onrender.com"
-const BACKEND_URL = "http://127.0.0.1:5000";
+const BACKEND_URL = "https://guestbook-backend-9mc3.onrender.com";
 
 (function () {
   const form = document.getElementById("guestbookForm");
