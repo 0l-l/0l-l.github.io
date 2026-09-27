@@ -38,11 +38,36 @@
           <li><a href="#">Instagram</a></li>
         </ul>
       </div>
+
+      <div class="guestbook">
+        <h3 class="guestbook-heading">Guestbook</h3>
+        <p class="guestbook-desc">
+          Leave a note — it's stored on a small backend and shown to everyone who visits this page.
+        </p>
+
+        <form id="guestbookForm" class="guestbook-form" novalidate>
+          <div class="guestbook-field">
+            <label for="gbName">Name</label>
+            <input type="text" id="gbName" name="name" maxlength="60" required autocomplete="name" />
+          </div>
+          <div class="guestbook-field">
+            <label for="gbMessage">Message</label>
+            <textarea id="gbMessage" name="message" rows="3" maxlength="500" required></textarea>
+          </div>
+          <button type="submit" class="btn">Sign guestbook</button>
+        </form>
+
+        <p id="guestbookStatus" class="guestbook-status" role="status" aria-live="polite"></p>
+
+        <ul id="guestbookList" class="guestbook-list" aria-label="Guestbook messages"></ul>
+      </div>
+
       <p class="colophon">© <span id="year"></span> Oulan Li</p>
     </div>
   </section>
 </main>
 
 <script src="script.js"></script>
+<script src="guestbook.js"></script>
 </body>
 </html>
