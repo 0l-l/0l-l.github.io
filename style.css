@@ -460,6 +460,55 @@ h2.section-title {
 
 .toc-meta .year { font-variant-numeric: tabular-nums; }
 
+/* Project thumbnails: grayscale to match the black-and-white system,
+   full color when the row is hovered or focused. Rows with a thumbnail use
+   a grid: picture on the left, title and tags on top, description below. */
+.toc-row:has(.toc-shot) {
+  display: grid;
+  grid-template-columns: auto 12rem 1fr auto;
+  grid-template-areas:
+    "mark shot title meta"
+    "mark shot desc  desc";
+  grid-template-rows: auto 1fr;
+  column-gap: 1.5rem;
+  row-gap: 0.4rem;
+  align-items: start;
+}
+
+.toc-row:has(.toc-shot) .toc-mark  { grid-area: mark; margin-top: 0.3rem; }
+.toc-row:has(.toc-shot) .toc-shot  { grid-area: shot; }
+.toc-row:has(.toc-shot) .toc-title { grid-area: title; min-width: 0; }
+.toc-row:has(.toc-shot) .toc-meta  { grid-area: meta; padding-top: 0.45rem; }
+.toc-row:has(.toc-shot) .toc-desc  { grid-area: desc; margin-top: 0; }
+
+.toc-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border: 1px solid var(--rule);
+  filter: grayscale(1);
+  transition: filter 0.3s ease;
+}
+
+.toc-row:hover .toc-shot,
+.toc-row:focus-visible .toc-shot { filter: none; }
+
+@media (max-width: 720px) {
+  .toc-row:has(.toc-shot) {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "shot  shot"
+      "title meta"
+      "desc  desc";
+    grid-template-rows: auto;
+    row-gap: 0.6rem;
+  }
+  .toc-row:has(.toc-shot) .toc-mark { display: none; }
+  .toc-row:has(.toc-shot) .toc-shot { margin-bottom: 0.4rem; }
+}
+
 .toc-desc {
   flex-basis: 100%;
   color: var(--ink-soft);
